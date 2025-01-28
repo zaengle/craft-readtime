@@ -11,6 +11,9 @@ use craft\helpers\StringHelper;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
 
+use zaengle\readtime\ReadTimeField;
+use zaengle\readtime\services\ReadTime;
+
 /**
  * Read Time field type
  */
@@ -23,7 +26,7 @@ class ReadTimeFieldType extends Field
 
     public static function icon(): string
     {
-        return 'i-cursor';
+        return 'timer';
     }
 
     public static function phpType(): string
@@ -35,7 +38,12 @@ class ReadTimeFieldType extends Field
     {
         // Replace with the appropriate data type this field will store in the database,
         // or `null` if the field is managing its own data storage.
-        return Schema::TYPE_STRING;
+        return Schema::TYPE_INTEGER;
+    }
+
+    public function getContentColumnType(): array|string
+    {
+        return Schema::TYPE_INTEGER;
     }
 
     public function attributeLabels(): array
@@ -68,11 +76,13 @@ class ReadTimeFieldType extends Field
         $id = Craft::$app->getView()->formatInputId($this->handle);
         $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 
+        $formattedValue = ReadTimeField::getInstance()->readTime->formatTime($value);
+
         return Craft::$app->getView()->renderTemplate(
             'readtime/_input',
             [
                 'name' => $this->handle,
-                'value' => $value,
+                'value' => $formattedValue,
                 'field' => $this,
                 'id' => $id,
                 'namespacedId' => $namespacedId

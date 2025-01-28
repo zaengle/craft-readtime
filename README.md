@@ -10,11 +10,47 @@ The Words per Minute value used to determine read time can be changed in the plu
 
 Create a new field with the Read Time field type and add it to your page Entry Type. The Read Time value will automatically update when the Entry is saved. If you save content within a CKEditor longform entry block, you will need to also save the parent entry to update the Read Time value.
 
-To display the field on the front end, call the field in the template as you would a plain text field.
+To display the field on the front end, call the field in the template by the field handle and apply the filter of the desired display:
+
+### Seconds (Integer)
+
+This is the default value. Example: 211 seconds will display as `211`
 
 ```twig
+  {{ entry.fieldHandle }} 
+  {{ entry.fieldHandle|inSeconds }} 
+```
 
-{{ entry.fieldHandle }}
+### Minutes (Integer)
+
+Example: 211 seconds will display as `3`
+
+```twig
+  {{ entry.fieldHandle|inMinutes }} 
+```
+
+### Hours (Integer)
+
+Example: 211 seconds will display as `0`. 
+
+```twig
+  {{ entry.fieldHandle|inHours }}
+```
+
+### Human (String)
+
+Example: 211 seconds will display as `3 minutes and 31 seconds`. 
+
+```twig
+  {{ entry.fieldHandle|human }}
+```
+
+### Simple (String)
+
+Seconds will be excluded and the minutes will round to the nearest minute. Example: 211 seconds will display as `4 minutes`. 
+
+```twig
+  {{ entry.fieldHandle|simple }}
 ```
 
 ## Compatibility
