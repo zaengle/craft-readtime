@@ -24,7 +24,7 @@ use zaengle\readtime\twigextensions\ReadTimeTwigExtension;
  */
 class ReadtimeField extends Plugin
 {
-    public string $schemaVersion = '1.0.1';
+    public string $schemaVersion = '1.0.0';
     public bool $hasCpSettings = true;
 
     public static function config(): array

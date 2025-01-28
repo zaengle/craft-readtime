@@ -14,7 +14,9 @@ To display the field on the front end, call the field in the template by the fie
 
 ### Seconds (Integer)
 
-This is the default value. Example: 211 seconds will display as `211`
+This is the default value. 
+
+Example: 211 seconds will display as `211`
 
 ```twig
   {{ entry.fieldHandle }} 
@@ -47,7 +49,9 @@ Example: 211 seconds will display as `3 minutes and 31 seconds`.
 
 ### Simple (String)
 
-Seconds will be excluded and the minutes will round to the nearest minute. Example: 211 seconds will display as `4 minutes`. 
+Seconds will be excluded and the minutes will round to the nearest minute. 
+
+Example: 211 seconds will display as `4 minutes`. 
 
 ```twig
   {{ entry.fieldHandle|simple }}
