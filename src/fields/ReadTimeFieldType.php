@@ -11,8 +11,9 @@ use craft\helpers\StringHelper;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
 
-use zaengle\readtime\ReadTimeField;
-use zaengle\readtime\services\ReadTime;
+use zaengle\readtime\Readtime;
+use zaengle\readtime\services\ReadTimeService;
+use zaengle\readtime\models\ReadTime as ReadTimeModel;
 
 /**
  * Read Time field type
@@ -67,22 +68,56 @@ class ReadTimeFieldType extends Field
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        return $value;
+        // Craft::dd($value);
+        // Already normalized?
+        // if ($value instanceof ReadTimeModel) {
+        //     return $value;
+        // }
+
+        // // Not set?
+        // if ($value === null) {
+        //     return null;
+        // }
+
+        // // Misconfigured in some other way?
+        // if (!is_float($value) || !is_int($value)) {
+        //     return null;
+        // }
+        
+        // return new ReadTimeModel([ 'seconds' => $value ]);
+
+        if ($value instanceof ReadTimeModel) {
+            return $value->seconds;
+        }
+
+        if (is_numeric($value)) {
+            return (int)$value;
+        }
+
+        return null;
+    }
+    public function populateValue($value)
+    {
+        // If the value is not already an instance of IntegerFieldModel, create one
+        return new ReadTimeModel(['seconds' => $value]);
     }
 
     protected function inputHtml(mixed $value, ?ElementInterface $element = null, bool $inline = true): string
     {
-        // Get our id and namespace
+        if ($value === null) {
+            $value = new ReadTimeModel(['seconds' => 0]); // Default to 0 if no value
+        } elseif (!$value instanceof IntegerFieldModel) {
+            $value = new ReadTimeModel(['seconds' => $value]);
+        }
+
         $id = Craft::$app->getView()->formatInputId($this->handle);
         $namespacedId = Craft::$app->getView()->namespaceInputId($id);
-
-        $formattedValue = ReadTimeField::getInstance()->readTime->formatTime($value);
 
         return Craft::$app->getView()->renderTemplate(
             'readtime/_input',
             [
                 'name' => $this->handle,
-                'value' => $formattedValue,
+                'value' => $value->seconds,
                 'field' => $this,
                 'id' => $id,
                 'namespacedId' => $namespacedId

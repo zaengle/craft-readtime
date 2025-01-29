@@ -12,17 +12,16 @@ use craft\services\Fields;
 use yii\base\Event;
 use zaengle\readtime\fields\ReadTimeFieldType;
 use zaengle\readtime\models\Settings;
-use zaengle\readtime\services\ReadTime;
-use zaengle\readtime\twigextensions\ReadTimeTwigExtension;
+use zaengle\readtime\services\ReadTimeService;
 
 /**
  * readtime plugin
  *
- * @method static ReadtimeField getInstance()
+ * @method static Readtime getInstance()
  * @method Settings getSettings()
- * @property-read ReadTime $readTime
+ * @property-read ReadTimeService $readTime
  */
-class ReadtimeField extends Plugin
+class Readtime extends Plugin
 {
     public string $schemaVersion = '1.0.0';
     public bool $hasCpSettings = true;
@@ -30,16 +29,13 @@ class ReadtimeField extends Plugin
     public static function config(): array
     {
         return [
-            'components' => ['readTime' => ReadTime::class],
+            'components' => ['readTime' => ReadTimeService::class],
         ];
     }
 
     public function init(): void
     {
         parent::init();
-
-        $extension = new ReadTimeTwigExtension();
-        Craft::$app->getView()->registerTwigExtension($extension);
 
         $this->attachEventHandlers();
     }
@@ -69,7 +65,7 @@ class ReadtimeField extends Plugin
             Entry::class,
             Entry::EVENT_BEFORE_SAVE,
             function (ModelEvent $event) {
-                $this->readTime->saveReadTime($event);
+                $this->readTime->saveReadTime($event->sender);
             }
         );
     }

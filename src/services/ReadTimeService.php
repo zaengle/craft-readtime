@@ -11,44 +11,40 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 
-use zaengle\readtime\ReadtimeField;
+use zaengle\readtime\Readtime;
 use zaengle\readtime\fields\ReadTimeFieldType;
 use zaengle\readtime\models\Settings;
+use zaengle\readtime\models\ReadTime as ReadTimeModel;
 
 /**
  * Read Time service
  */
-class ReadTime extends Component
+class ReadTimeService extends Component
 {
     private array $subEntryIds = [];
     private float $totalSeconds = 0;
     private string $fieldHandle = '';
 
-    public function saveReadTime(ModelEvent $event)
+    public function saveReadTime(Entry $element): void
     {
+        /**
+         * Check the status of the Entry before evaluating the content and updating the Read Time value.
+         * To update the Read Time value, the Entry must:
+         * - Not be a Draft, Duplicate or Revision
+         * - Be enabled on the site
+         */
         if (
-            !ElementHelper::isDraft($event->sender) &&
-            !($event->sender->duplicateOf && $event->sender->getIsCanonical() && !$event->sender->updatingFromDerivative) &&
-            ($event->sender->enabled && $event->sender->getEnabledForSite()) &&
-            !ElementHelper::rootElement($event->sender)->isProvisionalDraft &&
-            !ElementHelper::isRevision($event->sender)
+            !ElementHelper::isDraft($element) &&
+            !($element->duplicateOf && $element->getIsCanonical() && !$element->updatingFromDerivative) &&
+            ($element->enabled && $element->getEnabledForSite()) &&
+            !ElementHelper::rootElement($element)->isProvisionalDraft &&
+            !ElementHelper::isRevision($element)
         ) {
-            $element = $event->sender;
-
             $this->subEntryIds = [];
             $this->totalSeconds = 0;
             $this->fieldHandle = '';
-            $allFieldHandles = [];
 
-            foreach ($element->getFieldLayout()->getCustomFields() as $field) {
-                $allFieldHandles[] = $field->handle;
-
-                try {
-                    $this->processField($element, $field);
-                } catch (ErrorException $e) {
-                    continue;
-                }
-            }
+            $this->loopFields($element);
 
             // Check that CKEditor is installed and can include longform content
             $ckeditor = Craft::$app->plugins->getPlugin('ckeditor', false);
@@ -64,19 +60,30 @@ class ReadTime extends Component
                         ->all();
 
                     foreach ($subEntries as $subEntry) {
-                        foreach ($subEntry->getFieldLayout()->getCustomFields() as $entryField) {
-                            try {
-                                $this->processField($subEntry, $entryField);
-                            } catch (ErrorException $e) {
-                                continue;
-                            }
-                        }
+                        $this->loopFields($subEntry);
                     }
                 }
             }
+            
+            $formattedValue = new ReadTimeModel([ 
+                'seconds' => $this->totalSeconds
+            ]);
 
-            if (!empty($this->fieldHandle) && !empty($this->totalSeconds)) {
-                $element->setFieldValue($this->fieldHandle, $this->totalSeconds);
+            if (!empty($this->fieldHandle) && !empty($formattedValue)) {
+                $element->setFieldValue($this->fieldHandle, $formattedValue);
+            }
+
+        }
+    }
+
+    public function loopFields(Entry $element): void
+    {
+        foreach ($element->getFieldLayout()->getCustomFields() as $field) {
+            try {
+                $this->processField($element, $field);
+            } catch (ErrorException $e) {
+                Craft::error("Could not process field: {$field->handle} on element: {$element->id}", 'readtime');
+                continue;
             }
         }
     }
@@ -122,7 +129,7 @@ class ReadTime extends Component
     private function valToSeconds($value): float
     {
         /** @var Settings $settings */
-        $settings = ReadTimeField::getInstance()->getSettings();
+        $settings = ReadTime::getInstance()->getSettings();
         $wpm = $settings->wordsPerMinute;
 
         $string = StringHelper::toString($value);
@@ -155,6 +162,6 @@ class ReadTime extends Component
     }
     private function isSuperTable($field): bool
     {
-        return get_class($field) === 'verbb\supertable\fields\SuperTableField';
+        return $field instanceof verbb\supertable\fields\SuperTableField;
     }
 }
