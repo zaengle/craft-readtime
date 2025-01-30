@@ -64,13 +64,9 @@ class ReadTimeService extends Component
                     }
                 }
             }
-            
-            $formattedValue = new ReadTimeModel([ 
-                'seconds' => $this->totalSeconds
-            ]);
 
-            if (!empty($this->fieldHandle) && !empty($formattedValue)) {
-                $element->setFieldValue($this->fieldHandle, $formattedValue);
+            if (!empty($this->fieldHandle) && !empty($this->totalSeconds)) {
+                $element->setFieldValue($this->fieldHandle, $this->totalSeconds);
             }
 
         }

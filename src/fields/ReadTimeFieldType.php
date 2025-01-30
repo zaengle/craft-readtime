@@ -68,38 +68,7 @@ class ReadTimeFieldType extends Field
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        // Craft::dd($value);
-        // Already normalized?
-        // if ($value instanceof ReadTimeModel) {
-        //     return $value;
-        // }
-
-        // // Not set?
-        // if ($value === null) {
-        //     return null;
-        // }
-
-        // // Misconfigured in some other way?
-        // if (!is_float($value) || !is_int($value)) {
-        //     return null;
-        // }
-        
-        // return new ReadTimeModel([ 'seconds' => $value ]);
-
-        if ($value instanceof ReadTimeModel) {
-            return $value->seconds;
-        }
-
-        if (is_numeric($value)) {
-            return (int)$value;
-        }
-
-        return null;
-    }
-    public function populateValue($value)
-    {
-        // If the value is not already an instance of IntegerFieldModel, create one
-        return new ReadTimeModel(['seconds' => $value]);
+        return (int)$value;
     }
 
     protected function inputHtml(mixed $value, ?ElementInterface $element = null, bool $inline = true): string
