@@ -35,4 +35,8 @@ class ReadTime extends Model
     {
         return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, false) : '';
     }
+    public function __toString(): string
+    {
+        return $this->human();
+    }
 }
