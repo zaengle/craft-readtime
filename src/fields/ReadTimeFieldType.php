@@ -46,6 +46,7 @@ class ReadTimeFieldType extends Field
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+
         if ($value instanceof ReadTimeModel) {
             return $value;
         }
@@ -54,6 +55,9 @@ class ReadTimeFieldType extends Field
         }
         if (is_int($value)) {
             return new ReadTimeModel(['seconds' => $value]);
+        }
+        if (empty($value)) {
+            return new ReadTimeModel(['seconds' => 0]);
         }
         return $value;
     }

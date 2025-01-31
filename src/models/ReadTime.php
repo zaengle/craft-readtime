@@ -29,11 +29,10 @@ class ReadTime extends Model
     }
     public function human(): string
     {
-        // Craft::dd($this);
-        return DateTimeHelper::humanDuration($this->seconds, true);
+        return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, true) : '';
     }
     public function simple(): string
     {
-        return DateTimeHelper::humanDuration($this->seconds, false);
+        return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, false) : '';
     }
 }

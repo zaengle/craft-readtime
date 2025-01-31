@@ -127,8 +127,11 @@ class ReadTimeService extends Component
         }
     }
 
-    private function valToSeconds(string $value): int
+    private function valToSeconds(?string $value): int
     {
+        if (!$value) {
+            return 0;
+        }
         /** @var Settings $settings */
         $settings = ReadTime::getInstance()->getSettings();
         $wpm = $settings->wordsPerMinute;
