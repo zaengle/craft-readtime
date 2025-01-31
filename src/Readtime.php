@@ -57,14 +57,14 @@ class Readtime extends Plugin
     {
         // Register event handlers here ...
         // (see https://craftcms.com/docs/5.x/extend/events.html to get started)
-        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function (RegisterComponentTypesEvent $event) {
+        Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = ReadTimeFieldType::class;
         });
 
         Event::on(
             Entry::class,
             Entry::EVENT_BEFORE_SAVE,
-            function (ModelEvent $event) {
+            function(ModelEvent $event) {
                 /* @var \craft\base\ElementInterface $element */
                 $element = $event->sender;
                 if ($this->readTime->shouldUpdate($element)) {

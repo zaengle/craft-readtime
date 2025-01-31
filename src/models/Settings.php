@@ -2,7 +2,6 @@
 
 namespace zaengle\readtime\models;
 
-use Craft;
 use craft\base\Model;
 
 /**
@@ -10,7 +9,7 @@ use craft\base\Model;
  */
 class Settings extends Model
 {
-  public int $wordsPerMinute = 200;
+    public int $wordsPerMinute = 200;
 
     // Public Methods
     // =========================================================================
@@ -19,7 +18,7 @@ class Settings extends Model
     {
         return [
             [['wordsPerMinute'], 'required'],
-            [['wordsPerMinute'], 'number', 'integerOnly' => true]
+            [['wordsPerMinute'], 'number', 'integerOnly' => true],
         ];
     }
 }

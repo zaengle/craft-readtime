@@ -1,9 +1,11 @@
 <?php
+
 namespace zaengle\readtime\models;
 
 use Craft;
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
+
 /**
  * Custom Id model
  */
@@ -18,7 +20,7 @@ class ReadTime extends Model
     public function defineRules(): array
     {
         return [
-            [['seconds'], 'required']
+            [['seconds'], 'required'],
         ];
     }
     public function dateInterval(): \DateInterval
@@ -27,7 +29,7 @@ class ReadTime extends Model
     }
     public function human(): string
     {
-      // Craft::dd($this);
+        // Craft::dd($this);
         return DateTimeHelper::humanDuration($this->seconds, true);
     }
     public function simple(): string

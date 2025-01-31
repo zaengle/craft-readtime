@@ -4,16 +4,22 @@ namespace zaengle\readtime\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use yii\base\Component;
-
 use craft\elements\Entry;
+
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
+use craft\fields\Matrix;
+use craft\ckeditor\Field;
+use craft\fields\Table;
+use craft\fields\PlainText;
 
-use zaengle\readtime\Readtime;
+use ErrorException;
+use yii\base\Component;
+
 use zaengle\readtime\fields\ReadTimeFieldType;
 use zaengle\readtime\models\Settings;
+use zaengle\readtime\Readtime;
 
 /**
  * Read Time service
@@ -39,23 +45,15 @@ class ReadTimeService extends Component
 
         $this->loopFields($element);
 
-        // Check that CKEditor is installed and can include longform content
-        $ckeditor = Craft::$app->plugins->getPlugin('ckeditor');
+        if ($this->isCkEditor4Installed()) {
+            // Find entries that are owned by the CKEditor fields.
+            $subEntries = Entry::find()
+                ->ownerId($this->subEntryIds)
+                ->status('live')
+                ->all();
 
-        if ($ckeditor?->isInstalled) {
-            $ckeditorMajorVersion = explode('.', $ckeditor?->version)[0];
-
-            if ((int)$ckeditorMajorVersion >= 4) {
-
-                // Find entries that are owned by the CKEditor fields.
-                $subEntries = Entry::find()
-                    ->ownerId($this->subEntryIds)
-                    ->status('live')
-                    ->all();
-
-                foreach ($subEntries as $subEntry) {
-                    $this->loopFields($subEntry);
-                }
+            foreach ($subEntries as $subEntry) {
+                $this->loopFields($subEntry);
             }
         }
 
@@ -81,7 +79,7 @@ class ReadTimeService extends Component
 
     public function loopFields(ElementInterface $element): void
     {
-        foreach ($element->getFieldLayout()->getCustomFields() as $field) {
+        foreach ($element->getFieldLayout()?->getCustomFields() as $field) {
             try {
                 $this->processField($element, $field);
             } catch (ErrorException $e) {
@@ -137,7 +135,7 @@ class ReadTimeService extends Component
 
         $string = StringHelper::toString($value);
         $wordCount = StringHelper::countWords($string);
-        return floor($wordCount / $wpm * 60);
+        return (int) floor($wordCount / $wpm * 60);
     }
 
     public function formatTime($seconds): string
@@ -145,20 +143,34 @@ class ReadTimeService extends Component
         return DateTimeHelper::humanDuration($seconds, true);
     }
 
+    private function isCkEditor4Installed(): bool
+    {
+        // Check that CKEditor is installed and can include longform content
+        $ckeditor = Craft::$app->plugins->getPlugin('ckeditor');
+
+        if ($ckeditor && $ckeditor->isInstalled) {
+            $ckeditorMajorVersion = explode('.', $ckeditor->version)[0];
+
+            return ((int) $ckeditorMajorVersion >= 4);
+        }
+        return false;
+    }
+
     private function isMatrix($field): bool
     {
-        return $field instanceof craft\fields\Matrix;
+        return $field instanceof Matrix;
     }
     private function isCKEditor($field): bool
     {
-        return $field instanceof craft\ckeditor\Field;
+        // @phpstan-ignore-next-line
+        return class_exists('craft\ckeditor\Field') && $field instanceof craft\ckeditor\Field;
     }
     private function isTable($field): bool
     {
-        return $field instanceof craft\fields\Table;
+        return $field instanceof Table;
     }
     private function isPlainText($field): bool
     {
-        return $field instanceof craft\fields\PlainText;
+        return $field instanceof PlainText;
     }
 }
