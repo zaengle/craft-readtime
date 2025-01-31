@@ -3,10 +3,10 @@
 namespace zaengle\readtime\services;
 
 use Craft;
+use craft\base\ElementInterface;
 use yii\base\Component;
 
 use craft\elements\Entry;
-use craft\events\ModelEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
@@ -14,7 +14,6 @@ use craft\helpers\StringHelper;
 use zaengle\readtime\Readtime;
 use zaengle\readtime\fields\ReadTimeFieldType;
 use zaengle\readtime\models\Settings;
-use zaengle\readtime\models\ReadTime as ReadTimeModel;
 
 /**
  * Read Time service
@@ -22,10 +21,10 @@ use zaengle\readtime\models\ReadTime as ReadTimeModel;
 class ReadTimeService extends Component
 {
     private array $subEntryIds = [];
-    private float $totalSeconds = 0;
+    private int $totalSeconds = 0;
     private string $fieldHandle = '';
 
-    public function saveReadTime(Entry $element): void
+    public function update(ElementInterface $element): void
     {
         /**
          * Check the status of the Entry before evaluating the content and updating the Read Time value.
@@ -33,46 +32,54 @@ class ReadTimeService extends Component
          * - Not be a Draft, Duplicate or Revision
          * - Be enabled on the site
          */
-        if (
-            !ElementHelper::isDraft($element) &&
-            !($element->duplicateOf && $element->getIsCanonical() && !$element->updatingFromDerivative) &&
-            ($element->enabled && $element->getEnabledForSite()) &&
-            !ElementHelper::rootElement($element)->isProvisionalDraft &&
-            !ElementHelper::isRevision($element)
-        ) {
-            $this->subEntryIds = [];
-            $this->totalSeconds = 0;
-            $this->fieldHandle = '';
 
-            $this->loopFields($element);
+        $this->subEntryIds = [];
+        $this->totalSeconds = 0;
+        $this->fieldHandle = '';
 
-            // Check that CKEditor is installed and can include longform content
-            $ckeditor = Craft::$app->plugins->getPlugin('ckeditor', false);
-            if ($ckeditor->isInstalled) {
-                $ckeditorMajorVersion = explode('.', $ckeditor->version)[0];
+        $this->loopFields($element);
 
-                if ((int)$ckeditorMajorVersion >= 4) {
+        // Check that CKEditor is installed and can include longform content
+        $ckeditor = Craft::$app->plugins->getPlugin('ckeditor');
 
-                    // Find entries that are owned by the CKEditor fields. 
-                    $subEntries = Entry::find()
-                        ->ownerId($this->subEntryIds)
-                        ->status('live')
-                        ->all();
+        if ($ckeditor?->isInstalled) {
+            $ckeditorMajorVersion = explode('.', $ckeditor?->version)[0];
 
-                    foreach ($subEntries as $subEntry) {
-                        $this->loopFields($subEntry);
-                    }
+            if ((int)$ckeditorMajorVersion >= 4) {
+
+                // Find entries that are owned by the CKEditor fields.
+                $subEntries = Entry::find()
+                    ->ownerId($this->subEntryIds)
+                    ->status('live')
+                    ->all();
+
+                foreach ($subEntries as $subEntry) {
+                    $this->loopFields($subEntry);
                 }
             }
+        }
 
-            if (!empty($this->fieldHandle) && !empty($this->totalSeconds)) {
-                $element->setFieldValue($this->fieldHandle, $this->totalSeconds);
-            }
-
+        if (!empty($this->fieldHandle) && !empty($this->totalSeconds)) {
+            $element->setFieldValue($this->fieldHandle, $this->totalSeconds);
         }
     }
 
-    public function loopFields(Entry $element): void
+    /**
+     * Only process the Read Time value if the Entry is not a Draft, Duplicate or Revision
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public function shouldUpdate(ElementInterface $element): bool
+    {
+        return !ElementHelper::isDraft($element) &&
+            !($element->duplicateOf && $element->getIsCanonical() && !$element->updatingFromDerivative) &&
+            ($element->enabled && $element->getEnabledForSite()) &&
+            !$element->getRootOwner()->isProvisionalDraft &&
+            !ElementHelper::isRevision($element);
+    }
+
+    public function loopFields(ElementInterface $element): void
     {
         foreach ($element->getFieldLayout()->getCustomFields() as $field) {
             try {
@@ -97,7 +104,7 @@ class ReadTimeService extends Component
         } elseif ($this->isCKEditor($field)) {
             $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
             $seconds = $this->valToSeconds($value);
-            $this->totalSeconds = $this->totalSeconds + $seconds;
+            $this->totalSeconds += $seconds;
 
             // Collect editor IDs to query for entry block content
             $this->subEntryIds[] = $element->id;
@@ -108,21 +115,21 @@ class ReadTimeService extends Component
                 foreach ($row as $colId => $cellContent) {
                     if (is_string($cellContent)) {
                         $seconds = $this->valToSeconds($cellContent);
-                        $this->totalSeconds = $this->totalSeconds + $seconds;
+                        $this->totalSeconds += $seconds;
                     }
                 }
             }
         } elseif ($this->isPlainText($field)) {
             $value = $element->getFieldValue($field->handle);
             $seconds = $this->valToSeconds($value);
-            $this->totalSeconds = $this->totalSeconds + $seconds;
+            $this->totalSeconds += $seconds;
         }
         if ($field instanceof ReadTimeFieldType) {
             $this->fieldHandle = $field->handle;
         }
     }
 
-    private function valToSeconds($value): float
+    private function valToSeconds(string $value): int
     {
         /** @var Settings $settings */
         $settings = ReadTime::getInstance()->getSettings();
@@ -130,9 +137,7 @@ class ReadTimeService extends Component
 
         $string = StringHelper::toString($value);
         $wordCount = StringHelper::countWords($string);
-        $seconds = floor($wordCount / $wpm * 60);
-
-        return $seconds;
+        return floor($wordCount / $wpm * 60);
     }
 
     public function formatTime($seconds): string
@@ -155,9 +160,5 @@ class ReadTimeService extends Component
     private function isPlainText($field): bool
     {
         return $field instanceof craft\fields\PlainText;
-    }
-    private function isSuperTable($field): bool
-    {
-        return $field instanceof verbb\supertable\fields\SuperTableField;
     }
 }

@@ -65,7 +65,11 @@ class Readtime extends Plugin
             Entry::class,
             Entry::EVENT_BEFORE_SAVE,
             function (ModelEvent $event) {
-                $this->readTime->saveReadTime($event->sender);
+                /* @var \craft\base\ElementInterface $element */
+                $element = $event->sender;
+                if ($this->readTime->shouldUpdate($element)) {
+                    $this->readTime->update($element);
+                }
             }
         );
     }

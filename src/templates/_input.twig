@@ -1,8 +1,9 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-    value: value,
+    value: readTime.human,
     class: 'text fullwidth',
     disabled: true,
-    readonly: true
+    readonly: true,
+    instructions: "Reading time is automatically calculated on save, based on a reading speed of #{wpm} wpm"
 }) }}

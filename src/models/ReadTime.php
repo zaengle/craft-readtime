@@ -9,7 +9,7 @@ use craft\helpers\DateTimeHelper;
  */
 class ReadTime extends Model
 {
-    public int|float $seconds = 0;
+    public int $seconds = 0;
 
     /**
      * @inheritDoc
