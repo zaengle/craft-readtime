@@ -106,6 +106,10 @@ class ReadTimeService extends Component
 
             // Collect editor IDs to query for entry block content
             $this->subEntryIds[] = $element->id;
+        } elseif ($this->isRedactor($field)) {
+            $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
+            $seconds = $this->valToSeconds($value);
+            $this->totalSeconds += $seconds;
         } elseif ($this->isTable($field)) {
             $value = $element->getFieldValue($field->handle);
 
@@ -167,6 +171,11 @@ class ReadTimeService extends Component
     {
         // @phpstan-ignore-next-line
         return class_exists('craft\ckeditor\Field') && $field instanceof craft\ckeditor\Field;
+    }
+    private function isRedactor($field): bool
+    {
+        // @phpstan-ignore-next-line
+        return class_exists('craft\redactor\Field') && $field instanceof craft\redactor\Field;
     }
     private function isTable($field): bool
     {

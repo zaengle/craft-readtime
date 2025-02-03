@@ -7,6 +7,10 @@
 - Convert Schema to array for Craft 4 compatibility
 - README update
 
+### Added
+
+- Added Redactor support
+
 ## 1.0.2 2025-01-29
 
 ### Changed
