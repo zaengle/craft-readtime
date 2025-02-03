@@ -12,50 +12,44 @@ Create a new field with the Read Time field type and add it to your page Entry T
 
 To display the field on the front end, call the field in the template by the field handle and apply the filter of the desired display:
 
-### Seconds (Integer)
+### Human
 
-This is the default value. 
-
-Example: 211 seconds will display as `211`
+This is the default display type. It will automatically format the time in hours, minutes, and seconds. If hours or minutes do not apply, they will be excluded from the display.
 
 ```twig
-  {{ entry.fieldHandle }} 
-  {{ entry.fieldHandle|inSeconds }} 
+{{ entry.fieldHandle }}
+{{ entry.fieldHandle.human }} 
 ```
-
-### Minutes (Integer)
-
-Example: 211 seconds will display as `3`
-
-```twig
-  {{ entry.fieldHandle|inMinutes }} 
-```
-
-### Hours (Integer)
-
-Example: 211 seconds will display as `0`. 
-
-```twig
-  {{ entry.fieldHandle|inHours }}
-```
-
-### Human (String)
 
 Example: 211 seconds will display as `3 minutes and 31 seconds`. 
 
+### Simple
+
+Same as the Human display but the seconds will be excluded. The minutes will round to the nearest minute. 
+
 ```twig
-  {{ entry.fieldHandle|human }}
+{{ entry.fieldHandle.simple }} 
 ```
-
-### Simple (String)
-
-Seconds will be excluded and the minutes will round to the nearest minute. 
 
 Example: 211 seconds will display as `4 minutes`. 
 
+### DateTime
+
+Outputs the Read Time value as a date/time value that can be formatted.
+
 ```twig
-  {{ entry.fieldHandle|simple }}
+{{ entry.fieldHandle.dateInterval|date('%h hours, %i minutes, %s seconds') }} 
 ```
+
+Example: 211 seconds will display as `0 hours, 3 minutes, 31 seconds`. 
+
+## Content Updates
+
+If the field is added to a section after content is added, the content will need to be resaved to fill the Read Time field value. To resave a whole section at once, use the CLI command:
+
+`craft resave/entries --section sectionHandle`
+
+If you have a lot of entries and want to add it to the Craft queue, add the `--queue` flag to the command.
 
 ## Compatibility
 

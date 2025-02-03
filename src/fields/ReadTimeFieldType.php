@@ -36,12 +36,16 @@ class ReadTimeFieldType extends Field
     {
         // Replace with the appropriate data type this field will store in the database,
         // or `null` if the field is managing its own data storage.
-        return Schema::TYPE_INTEGER;
+        return [
+            'seconds' => Schema::TYPE_INTEGER,
+        ];
     }
 
     public function getContentColumnType(): array|string
     {
-        return Schema::TYPE_INTEGER;
+        return [
+            'seconds' => Schema::TYPE_INTEGER,
+        ];
     }
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed

@@ -1,5 +1,12 @@
 # Release Notes for Read Time
 
+## 1.0.3 2025-02-03
+
+### Changed
+
+- Convert Schema to array for Craft 4 compatibility
+- README update
+
 ## 1.0.2 2025-01-29
 
 ### Changed
