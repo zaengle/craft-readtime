@@ -19,7 +19,7 @@ use zaengle\readtime\services\ReadtimeService;
  *
  * @method static Readtime getInstance()
  * @method Settings getSettings()
- * @property-read ReadtimeService $readTime
+ * @property-read ReadtimeService $readtime
  */
 class Readtime extends Plugin
 {
@@ -29,7 +29,7 @@ class Readtime extends Plugin
     public static function config(): array
     {
         return [
-            'components' => ['readTime' => ReadtimeService::class],
+            'components' => ['readtime' => ReadtimeService::class],
         ];
     }
 
@@ -67,8 +67,8 @@ class Readtime extends Plugin
             function(ModelEvent $event) {
                 /* @var \craft\base\ElementInterface $element */
                 $element = $event->sender;
-                if ($this->readTime->shouldUpdate($element)) {
-                    $this->readTime->update($element);
+                if ($this->readtime->shouldUpdate($element)) {
+                    $this->readtime->update($element);
                 }
             }
         );
