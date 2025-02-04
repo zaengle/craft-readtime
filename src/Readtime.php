@@ -10,16 +10,16 @@ use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Fields;
 use yii\base\Event;
-use zaengle\readtime\fields\ReadTimeFieldType;
+use zaengle\readtime\fields\ReadtimeField;
 use zaengle\readtime\models\Settings;
-use zaengle\readtime\services\ReadTimeService;
+use zaengle\readtime\services\ReadtimeService;
 
 /**
  * readtime plugin
  *
  * @method static Readtime getInstance()
  * @method Settings getSettings()
- * @property-read ReadTimeService $readTime
+ * @property-read ReadtimeService $readTime
  */
 class Readtime extends Plugin
 {
@@ -29,7 +29,7 @@ class Readtime extends Plugin
     public static function config(): array
     {
         return [
-            'components' => ['readTime' => ReadTimeService::class],
+            'components' => ['readTime' => ReadtimeService::class],
         ];
     }
 
@@ -58,7 +58,7 @@ class Readtime extends Plugin
         // Register event handlers here ...
         // (see https://craftcms.com/docs/5.x/extend/events.html to get started)
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
-            $event->types[] = ReadTimeFieldType::class;
+            $event->types[] = ReadtimeField::class;
         });
 
         Event::on(

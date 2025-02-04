@@ -17,14 +17,14 @@ use craft\fields\PlainText;
 use ErrorException;
 use yii\base\Component;
 
-use zaengle\readtime\fields\ReadTimeFieldType;
+use zaengle\readtime\fields\ReadtimeField;
 use zaengle\readtime\models\Settings;
 use zaengle\readtime\Readtime;
 
 /**
  * Read Time service
  */
-class ReadTimeService extends Component
+class ReadtimeService extends Component
 {
     private array $subEntryIds = [];
     private int $totalSeconds = 0;
@@ -78,7 +78,7 @@ class ReadTimeService extends Component
     {
         $hasField = false;
         foreach ($element->getFieldLayout()?->getCustomFields() as $field) {
-            if ($field instanceof ReadTimeFieldType) {
+            if ($field instanceof ReadtimeField) {
                 $hasField = true;
             }
         }
@@ -134,7 +134,7 @@ class ReadTimeService extends Component
             $seconds = $this->valToSeconds($value);
             $this->totalSeconds += $seconds;
         }
-        if ($field instanceof ReadTimeFieldType) {
+        if ($field instanceof ReadtimeField) {
             $this->fieldHandle = $field->handle;
         }
     }

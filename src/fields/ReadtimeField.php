@@ -15,7 +15,7 @@ use zaengle\readtime\Readtime;
 /**
  * Read Time field type
  */
-class ReadTimeFieldType extends Field
+class ReadtimeField extends Field
 {
     public static function displayName(): string
     {
