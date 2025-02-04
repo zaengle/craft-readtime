@@ -76,13 +76,9 @@ class ReadtimeService extends Component
     
     public function elementHasReadtimeField(ElementInterface $element): bool
     {
-        $hasField = false;
-        foreach ($element->getFieldLayout()?->getCustomFields() as $field) {
-            if ($field instanceof ReadtimeField) {
-                $hasField = true;
-            }
-        }
-        return (bool) $hasField;
+        return (bool) collect($element->getFieldLayout()?->getCustomFields())->firstWhere(
+            fn($field) => $field instanceof ReadtimeField
+        );
     }
 
     public function loopFields(ElementInterface $element): void
