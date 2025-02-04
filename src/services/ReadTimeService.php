@@ -10,7 +10,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\fields\Matrix;
-use craft\ckeditor\Field;
 use craft\fields\Table;
 use craft\fields\PlainText;
 
@@ -173,13 +172,11 @@ class ReadtimeService extends Component
     }
     private function isCKEditor($field): bool
     {
-        // @phpstan-ignore-next-line
-        return class_exists('craft\ckeditor\Field') && $field instanceof craft\ckeditor\Field;
+        return is_a($field, 'craft\ckeditor\Field');
     }
     private function isRedactor($field): bool
     {
-        // @phpstan-ignore-next-line
-        return class_exists('craft\redactor\Field') && $field instanceof craft\redactor\Field;
+        return is_a($field, 'craft\redactor\Field');
     }
     private function isTable($field): bool
     {
