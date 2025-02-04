@@ -26,6 +26,7 @@ use zaengle\readtime\Readtime;
 class ReadtimeService extends Component
 {
     private array $subEntryIds = [];
+    private array $excludeIds = [];
     private int $totalSeconds = 0;
     private string $fieldHandle = '';
 
@@ -39,6 +40,7 @@ class ReadtimeService extends Component
          */
 
         $this->subEntryIds = [];
+        $this->excludeIds = [];
         $this->totalSeconds = 0;
         $this->fieldHandle = '';
 
@@ -103,12 +105,16 @@ class ReadtimeService extends Component
                 }
             }
         } elseif ($this->isCKEditor($field)) {
-            $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-            $seconds = $this->valToSeconds($value);
-            $this->totalSeconds += $seconds;
+            // Make sure content has not already been counted (Longform)
+            if( !in_array($element->id . "." . $field->handle, $this->excludeIds) ) {
+                $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                $seconds = $this->valToSeconds($value);
+                $this->totalSeconds += $seconds;
 
-            // Collect editor IDs to query for entry block content
-            $this->subEntryIds[] = $element->id;
+                // Collect editor IDs to query for entry block content
+                $this->subEntryIds[] = $element->id;
+                $this->excludeIds[] = $element->id . "." . $field->handle;
+            }
         } elseif ($this->isRedactor($field)) {
             $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
             $seconds = $this->valToSeconds($value);
