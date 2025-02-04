@@ -1,5 +1,11 @@
 # Release Notes for Read Time
 
+## 1.0.4 2025-02-04
+
+### Changed
+
+- Branch out craft-4 build
+
 ## 1.0.3 2025-02-03
 
 ### Changed
