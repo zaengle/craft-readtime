@@ -70,11 +70,19 @@ class ReadTimeService extends Component
      */
     public function shouldUpdate(ElementInterface $element): bool
     {
-        return !ElementHelper::isDraft($element) &&
-            !($element->duplicateOf && $element->getIsCanonical() && !$element->updatingFromDerivative) &&
-            ($element->enabled && $element->getEnabledForSite()) &&
-            !$element->getRootOwner()->isProvisionalDraft &&
-            !ElementHelper::isRevision($element);
+        return !ElementHelper::isDraftOrRevision($element) &&
+            $this->elementHasReadtimeField($element);
+    }
+    
+    public function elementHasReadtimeField(ElementInterface $element): bool
+    {
+        $hasField = false;
+        foreach ($element->getFieldLayout()?->getCustomFields() as $field) {
+            if ($field instanceof ReadTimeFieldType) {
+                $hasField = true;
+            }
+        }
+        return (bool) $hasField;
     }
 
     public function loopFields(ElementInterface $element): void
