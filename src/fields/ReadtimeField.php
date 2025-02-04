@@ -5,16 +5,17 @@ namespace zaengle\readtime\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
 
+use zaengle\readtime\models\ReadTime as ReadTimeModel;
+use zaengle\readtime\Readtime;
+
 /**
  * Read Time field type
  */
-class ReadTimeFieldType extends Field
+class ReadtimeField extends Field
 {
     public static function displayName(): string
     {
@@ -23,59 +24,56 @@ class ReadTimeFieldType extends Field
 
     public static function icon(): string
     {
-        return 'i-cursor';
+        return 'timer';
     }
 
     public static function phpType(): string
     {
-        return 'mixed';
+        return ReadTimeModel::class;
     }
 
     public static function dbType(): array|string|null
     {
         // Replace with the appropriate data type this field will store in the database,
         // or `null` if the field is managing its own data storage.
-        return Schema::TYPE_STRING;
+        return [
+            'seconds' => Schema::TYPE_INTEGER,
+        ];
     }
 
-    public function attributeLabels(): array
+    public function getContentColumnType(): array|string
     {
-        return array_merge(parent::attributeLabels(), [
-            // ...
-        ]);
-    }
-
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            // ...
-        ]);
-    }
-
-    public function getSettingsHtml(): ?string
-    {
-        return null;
+        return [
+            'seconds' => Schema::TYPE_INTEGER,
+        ];
     }
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
+
+        if ($value instanceof ReadTimeModel) {
+            return $value;
+        }
+        if (is_array($value)) {
+            return new ReadTimeModel($value);
+        }
+        if (is_int($value)) {
+            return new ReadTimeModel(['seconds' => $value]);
+        }
+        if (empty($value)) {
+            return new ReadTimeModel(['seconds' => 0]);
+        }
         return $value;
     }
 
     protected function inputHtml(mixed $value, ?ElementInterface $element = null, bool $inline = true): string
     {
-        // Get our id and namespace
-        $id = Craft::$app->getView()->formatInputId($this->handle);
-        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
-
+        /* @var ReadTimeModel $value */
         return Craft::$app->getView()->renderTemplate(
             'readtime/_input',
             [
-                'name' => $this->handle,
-                'value' => $value,
-                'field' => $this,
-                'id' => $id,
-                'namespacedId' => $namespacedId
+                'readTime' => $value,
+                'wpm' => Readtime::getInstance()->getSettings()->wordsPerMinute,
             ]
         );
     }

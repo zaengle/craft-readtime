@@ -9,12 +9,15 @@
     }
   ],
   "require": {
-    "php": "^8.0.1|^8.2",
+    "php": ">=8.0.2",
     "craftcms/cms": "^4.0.1|^5.0.0"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
-    "craftcms/phpstan": "dev-main"
+    "craftcms/phpstan": "dev-main",
+    "phpstan/phpstan": "^1.12",
+    "roave/security-advisories": "dev-latest",
+    "symplify/easy-coding-standard": "^10.3"
   },
   "autoload": {
     "psr-4": {
@@ -26,7 +29,7 @@
     "handle": "readtime",
     "developer": "Zaengle",
     "documentationUrl": "",
-    "class": "zaengle\\readtime\\ReadtimeField"
+    "class": "zaengle\\readtime\\Readtime"
   },
   "scripts": {
     "check-cs": "ecs check --ansi",
@@ -35,9 +38,6 @@
   },
   "config": {
     "sort-packages": true,
-    "platform": {
-      "php": "^8.0.1|^8.2"
-    },
     "allow-plugins": {
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true

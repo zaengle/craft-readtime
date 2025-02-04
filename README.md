@@ -10,12 +10,58 @@ The Words per Minute value used to determine read time can be changed in the plu
 
 Create a new field with the Read Time field type and add it to your page Entry Type. The Read Time value will automatically update when the Entry is saved. If you save content within a CKEditor longform entry block, you will need to also save the parent entry to update the Read Time value.
 
-To display the field on the front end, call the field in the template as you would a plain text field.
+To display the field on the front end, call the field in the template by the field handle and apply the filter of the desired display:
+
+### Human
+
+This is the default display type. It will automatically format the time in hours, minutes, and seconds. If hours or minutes do not apply, they will be excluded from the display.
 
 ```twig
-
 {{ entry.fieldHandle }}
+{{ entry.fieldHandle.human }} 
 ```
+
+Example: 211 seconds will display as `3 minutes and 31 seconds`. 
+
+### Simple
+
+Same as the Human display but the seconds will be excluded. The minutes will round to the nearest minute. 
+
+```twig
+{{ entry.fieldHandle.simple }} 
+```
+
+Example: 211 seconds will display as `4 minutes`. 
+
+### Rounded
+
+If the Read Time is under a minute or over an hour, the display will get rounded. Otherwise, it will show the Simple value. Under a minute will display "Less than a minute". Over an hour will round the minutes to the nearest 5 minute value.
+
+```twig
+{{ entry.fieldHandle.rounded }} 
+```
+
+Example: 55 seconds will display as `Less than a minute`. 
+
+Example: 3840 seconds will display as `1 hour and 5 minutes`. 
+
+### DateTime
+
+Outputs the Read Time value as a date/time value that can be formatted.
+
+```twig
+{{ entry.fieldHandle.dateInterval|date('%h hours, %i minutes, %s seconds') }} 
+```
+
+Example: 211 seconds will display as `0 hours, 3 minutes, 31 seconds`. 
+
+## Content Updates
+
+If the field is added to a section after content is added, the content will need to be resaved to fill the Read Time field value. To resave a whole section at once, use the CLI command:
+
+`craft resave/entries --section sectionHandle`
+
+If you have a lot of entries and want to add it to the Craft queue, add the `--queue` flag to the command.
 
 ## Compatibility
 
