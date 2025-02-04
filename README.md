@@ -33,6 +33,18 @@ Same as the Human display but the seconds will be excluded. The minutes will rou
 
 Example: 211 seconds will display as `4 minutes`. 
 
+### Rounded
+
+If the Read Time is under a minute or over an hour, the display will get rounded. Otherwise, it will show the Simple value. Under a minute will display "Less than a minute". Over an hour will round the minutes to the nearest 5 minute value.
+
+```twig
+{{ entry.fieldHandle.rounded }} 
+```
+
+Example: 55 seconds will display as `Less than a minute`. 
+
+Example: 3840 seconds will display as `1 hour and 5 minutes`. 
+
 ### DateTime
 
 Outputs the Read Time value as a date/time value that can be formatted.

@@ -35,6 +35,18 @@ class ReadTime extends Model
     {
         return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, false) : '';
     }
+    public function rounded(): string
+    {
+        if ($this->seconds < 60) {
+            return "Less than a minute";
+        } elseif ($this->seconds > 3600) {
+            $rounded = 60 * 5; // Round to nearest five minutes
+            
+            return $this->seconds ? DateTimeHelper::humanDuration(round($this->seconds / $rounded) * $rounded, false) : '';
+        } else {
+            return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, false) : '';
+        }
+    }
     public function __toString(): string
     {
         return $this->human();
