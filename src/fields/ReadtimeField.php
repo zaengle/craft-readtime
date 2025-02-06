@@ -50,7 +50,6 @@ class ReadtimeField extends Field
 
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-
         if ($value instanceof ReadTimeModel) {
             return $value;
         }

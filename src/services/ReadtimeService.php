@@ -6,12 +6,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 
+use craft\fields\Matrix;
+use craft\fields\PlainText;
+use craft\fields\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
-use craft\fields\Matrix;
-use craft\fields\Table;
-use craft\fields\PlainText;
 
 use ErrorException;
 use yii\base\Component;

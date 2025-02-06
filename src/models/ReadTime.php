@@ -2,7 +2,6 @@
 
 namespace zaengle\readtime\models;
 
-use Craft;
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 
@@ -12,6 +11,9 @@ use craft\helpers\DateTimeHelper;
 class ReadTime extends Model
 {
     public int $seconds = 0;
+    public const ONE_MINUTE = 60;
+    public const ONE_HOUR = 3600;
+    public const FIVE_MINUTES = 300;
 
     /**
      * @inheritDoc
@@ -37,15 +39,21 @@ class ReadTime extends Model
     }
     public function rounded(): string
     {
-        if ($this->seconds < 60) {
-            return "Less than a minute";
-        } elseif ($this->seconds > 3600) {
-            $rounded = 60 * 5; // Round to nearest five minutes
-            
-            return $this->seconds ? DateTimeHelper::humanDuration(round($this->seconds / $rounded) * $rounded, false) : '';
-        } else {
-            return $this->seconds ? DateTimeHelper::humanDuration($this->seconds, false) : '';
+        if ($this->seconds === 0) {
+            return '';
         }
+
+        if ($this->seconds < self::ONE_MINUTE) {
+            return "Less than a minute";
+        }
+
+        if ($this->seconds > self::ONE_HOUR) {
+            $rounded = round($this->seconds / self::FIVE_MINUTES) * self::FIVE_MINUTES;
+
+            return DateTimeHelper::humanDuration($rounded, false);
+        }
+
+        return DateTimeHelper::humanDuration($this->seconds, false);
     }
     public function __toString(): string
     {
