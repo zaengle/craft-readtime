@@ -1,6 +1,6 @@
-# Read Time Field
+# Readtime Field
 
-Read Time creates a new Field Type called Read Time. When added to an entry, the field will loop through all of the content fields and calculate the estimated read time of the text content and save the value for use on the front end. The Read Time field will update every time the Entry is saved.
+Readtime provides a new Field Type called Read Time. When added to an entry, the field will loop through all of the content fields and calculate the estimated read time of the text content and save the value for use on the front end. The Read Time field will update every time the Entry is saved.
 
 ## Settings
 
