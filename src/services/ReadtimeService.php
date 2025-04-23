@@ -48,7 +48,7 @@ class ReadtimeService extends Component
 
         if ($this->isCkEditor4Installed() && !empty($this->subEntryIds)) {
             // Find entries that are owned by the CKEditor fields.
-            $subEntries =  Entry::find()
+            $subEntries = Entry::find()
                 ->id($this->subEntryIds)
                 ->all();
 
@@ -73,7 +73,7 @@ class ReadtimeService extends Component
         return !ElementHelper::isDraftOrRevision($element) &&
             $this->elementHasReadtimeField($element);
     }
-    
+
     public function elementHasReadtimeField(ElementInterface $element): bool
     {
         return (bool) collect($element->getFieldLayout()?->getCustomFields())->firstWhere(
@@ -105,7 +105,7 @@ class ReadtimeService extends Component
             }
         } elseif ($this->isCKEditor($field)) {
             // Make sure content has not already been counted (Longform)
-            if( !in_array($element->id . "." . $field->handle, $this->excludeIds) ) {
+            if (!in_array($element->id . "." . $field->handle, $this->excludeIds)) {
                 $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
                 $seconds = $this->valToSeconds($value);
                 $this->totalSeconds += $seconds;
