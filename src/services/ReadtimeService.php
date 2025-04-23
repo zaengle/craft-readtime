@@ -46,11 +46,10 @@ class ReadtimeService extends Component
 
         $this->loopFields($element);
 
-        if ($this->isCkEditor4Installed()) {
+        if ($this->isCkEditor4Installed() && !empty($this->subEntryIds)) {
             // Find entries that are owned by the CKEditor fields.
-            $subEntries = Entry::find()
-                ->ownerId($this->subEntryIds)
-                ->status('live')
+            $subEntries =  Entry::find()
+                ->id($this->subEntryIds)
                 ->all();
 
             foreach ($subEntries as $subEntry) {
@@ -111,8 +110,17 @@ class ReadtimeService extends Component
                 $seconds = $this->valToSeconds($value);
                 $this->totalSeconds += $seconds;
 
-                // Collect editor IDs to query for entry block content
-                $this->subEntryIds[] = $element->id;
+                // Extract entry IDs from embedded entry blocks using regex
+                if (preg_match_all('/<craft-entry[^>]*data-entry-id="(\d+)"[^>]*>/i', $value, $matches)) {
+                    // Filter and validate entry IDs
+                    $entryIds = array_filter($matches[1], function($id) {
+                        return is_numeric($id) && $id > 0;
+                    });
+
+                    // Add unique entry IDs
+                    $this->subEntryIds = array_unique(array_merge($this->subEntryIds, $entryIds));
+                }
+
                 $this->excludeIds[] = $element->id . "." . $field->handle;
             }
         } elseif ($this->isRedactor($field)) {
