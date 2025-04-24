@@ -106,46 +106,46 @@ class ReadtimeService extends Component
         } elseif ($this->isCKEditor($field)) {
             // Make sure content has not already been counted (Longform)
             if (!in_array($element->id . "." . $field->handle, $this->excludeIds)) {
-                $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-                $seconds = $this->valToSeconds($value);
-                $this->totalSeconds += $seconds;
+                $fieldHandle = $field->handle;
+                $fieldContent = $element->$fieldHandle;
 
-                // Extract entry IDs from embedded entry blocks using regex
-                if (preg_match_all('/<craft-entry[^>]*data-entry-id="(\d+)"[^>]*>/i', $value, $matches)) {
-                    // Filter and validate entry IDs
-                    $entryIds = array_filter($matches[1], function($id) {
-                        return is_numeric($id) && $id > 0;
-                    });
-
-                    // Add unique entry IDs
-                    $this->subEntryIds = array_unique(array_merge($this->subEntryIds, $entryIds));
-                }
+                collect($fieldContent)->each(function($chunk) {
+                    $chunk->type == 'markup' ? $this->addSeconds($chunk->rawHtml) : $this->trackSubEntry($chunk->entry->id);
+                });
 
                 $this->excludeIds[] = $element->id . "." . $field->handle;
             }
         } elseif ($this->isRedactor($field)) {
             $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-            $seconds = $this->valToSeconds($value);
-            $this->totalSeconds += $seconds;
+            $this->addSeconds($value);
         } elseif ($this->isTable($field)) {
             $value = $element->getFieldValue($field->handle);
 
             foreach ($value as $rowIndex => $row) {
                 foreach ($row as $colId => $cellContent) {
                     if (is_string($cellContent)) {
-                        $seconds = $this->valToSeconds($cellContent);
-                        $this->totalSeconds += $seconds;
+                        $this->addSeconds($cellContent);
                     }
                 }
             }
         } elseif ($this->isPlainText($field)) {
             $value = $element->getFieldValue($field->handle);
-            $seconds = $this->valToSeconds($value);
-            $this->totalSeconds += $seconds;
+            $this->addSeconds($value);
         }
         if ($field instanceof ReadtimeField) {
             $this->fieldHandle = $field->handle;
         }
+    }
+
+    private function addSeconds($value): void
+    {
+        $seconds = $this->valToSeconds($value);
+        $this->totalSeconds += $seconds;
+    }
+
+    private function trackSubEntry($entryId): void
+    {
+        $this->subEntryIds[] = $entryId;
     }
 
     private function valToSeconds(?string $value): int
