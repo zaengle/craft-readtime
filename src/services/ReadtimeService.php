@@ -46,11 +46,10 @@ class ReadtimeService extends Component
 
         $this->loopFields($element);
 
-        if ($this->isCkEditor4Installed()) {
+        if ($this->isCkEditor4Installed() && !empty($this->subEntryIds)) {
             // Find entries that are owned by the CKEditor fields.
             $subEntries = Entry::find()
-                ->ownerId($this->subEntryIds)
-                ->status('live')
+                ->id($this->subEntryIds)
                 ->all();
 
             foreach ($subEntries as $subEntry) {
@@ -74,7 +73,7 @@ class ReadtimeService extends Component
         return !ElementHelper::isDraftOrRevision($element) &&
             $this->elementHasReadtimeField($element);
     }
-    
+
     public function elementHasReadtimeField(ElementInterface $element): bool
     {
         return (bool) collect($element->getFieldLayout()?->getCustomFields())->firstWhere(
@@ -106,38 +105,47 @@ class ReadtimeService extends Component
             }
         } elseif ($this->isCKEditor($field)) {
             // Make sure content has not already been counted (Longform)
-            if( !in_array($element->id . "." . $field->handle, $this->excludeIds) ) {
-                $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-                $seconds = $this->valToSeconds($value);
-                $this->totalSeconds += $seconds;
+            if (!in_array($element->id . "." . $field->handle, $this->excludeIds)) {
+                $fieldHandle = $field->handle;
+                $fieldContent = $element->$fieldHandle;
 
-                // Collect editor IDs to query for entry block content
-                $this->subEntryIds[] = $element->id;
+                collect($fieldContent)->each(function($chunk) {
+                    $chunk->type == 'markup' ? $this->addSeconds($chunk->rawHtml) : $this->trackSubEntry($chunk->entry->id);
+                });
+
                 $this->excludeIds[] = $element->id . "." . $field->handle;
             }
         } elseif ($this->isRedactor($field)) {
             $value = $field->serializeValue($element->getFieldValue($field->handle), $element);
-            $seconds = $this->valToSeconds($value);
-            $this->totalSeconds += $seconds;
+            $this->addSeconds($value);
         } elseif ($this->isTable($field)) {
             $value = $element->getFieldValue($field->handle);
 
             foreach ($value as $rowIndex => $row) {
                 foreach ($row as $colId => $cellContent) {
                     if (is_string($cellContent)) {
-                        $seconds = $this->valToSeconds($cellContent);
-                        $this->totalSeconds += $seconds;
+                        $this->addSeconds($cellContent);
                     }
                 }
             }
         } elseif ($this->isPlainText($field)) {
             $value = $element->getFieldValue($field->handle);
-            $seconds = $this->valToSeconds($value);
-            $this->totalSeconds += $seconds;
+            $this->addSeconds($value);
         }
         if ($field instanceof ReadtimeField) {
             $this->fieldHandle = $field->handle;
         }
+    }
+
+    private function addSeconds($value): void
+    {
+        $seconds = $this->valToSeconds($value);
+        $this->totalSeconds += $seconds;
+    }
+
+    private function trackSubEntry($entryId): void
+    {
+        $this->subEntryIds[] = $entryId;
     }
 
     private function valToSeconds(?string $value): int
