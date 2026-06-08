@@ -1,5 +1,6 @@
 name: Deploy Docs
-
+permissions:
+  contents: read
 on:
   push:
     branches:
